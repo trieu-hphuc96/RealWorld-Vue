@@ -6,16 +6,20 @@
         <div class="row">
 
           <div class="col-xs-12 col-md-10 offset-md-1">
-            <img src="http://i.imgur.com/Qr71crq.jpg" class="user-img" />
-            <h4>Eric Simons</h4>
+            <img v-bind:src="profileData.image" class="user-img" />
+            <h4>{{profileData.username}}</h4>
             <p>
-              Cofounder @GoThinkster, lived in Aol's HQ for a few months, kinda looks like Peeta from the Hunger Games
+              {{profileData.bio}}
             </p>
-            <button class="btn btn-sm btn-outline-secondary action-btn">
-              <i class="ion-plus-round"></i>
-              &nbsp;
-              Follow Eric Simons
-            </button>
+            <a class="btn btn-sm btn-outline-secondary action-btn" v-if="!isUser && !profileData.following" v-on:click.prevent="$store.dispatch('followPerson',profileData.username)" href="">
+              <i class="ion-plus-round"></i> &nbsp; Follow {{profileData.username}}
+            </a>
+            <a class="btn btn-sm btn-outline-secondary action-btn" v-if="!isUser && profileData.following" v-on:click.prevent="$store.dispatch('unFollowPerson',profileData.username)" href="">
+              <i class="ion-minus-round"></i> &nbsp; Unfollow {{profileData.username}}
+            </a>
+            <a class="btn btn-sm btn-outline-secondary action-btn" v-if="isUser" href="" v-on:click.prevent="$store.commit('route','/settings')">
+              <i class="ion-gear-a"></i> Edit Profile Settings
+            </a>
           </div>
 
         </div>
@@ -29,53 +33,15 @@
           <div class="articles-toggle">
             <ul class="nav nav-pills outline-active">
               <li class="nav-item">
-                <a class="nav-link active" href="">My Articles</a>
+                <a class="nav-link" v-bind:class="{ active: currentArticles === 'my' }" href="" v-on:click.prevent="currentArticles = 'my'">My Articles</a>
               </li>
               <li class="nav-item">
-                <a class="nav-link" href="">Favorited Articles</a>
+                <a class="nav-link" v-bind:class="{ active: currentArticles === 'favorited' }" href="" v-on:click.prevent="currentArticles = 'favorited'">Favorited Articles</a>
               </li>
             </ul>
           </div>
 
-          <div class="article-preview">
-            <div class="article-meta">
-              <a href=""><img src="http://i.imgur.com/Qr71crq.jpg" /></a>
-              <div class="info">
-                <a href="" class="author">Eric Simons</a>
-                <span class="date">January 20th</span>
-              </div>
-              <button class="btn btn-outline-primary btn-sm pull-xs-right">
-                <i class="ion-heart"></i> 29
-              </button>
-            </div>
-            <a href="" class="preview-link">
-              <h1>How to build webapps that scale</h1>
-              <p>This is the description for the post.</p>
-              <span>Read more...</span>
-            </a>
-          </div>
-
-          <div class="article-preview">
-            <div class="article-meta">
-              <a href=""><img src="http://i.imgur.com/N4VcUeJ.jpg" /></a>
-              <div class="info">
-                <a href="" class="author">Albert Pai</a>
-                <span class="date">January 20th</span>
-              </div>
-              <button class="btn btn-outline-primary btn-sm pull-xs-right">
-                <i class="ion-heart"></i> 32
-              </button>
-            </div>
-            <a href="" class="preview-link">
-              <h1>The song you won't ever stop singing. No matter how hard you try.</h1>
-              <p>This is the description for the post.</p>
-              <span>Read more...</span>
-              <ul class="tag-list">
-                <li class="tag-default tag-pill tag-outline">Music</li>
-                <li class="tag-default tag-pill tag-outline">Song</li>
-              </ul>
-            </a>
-          </div>
+          <ArticlePreview v-for="article in currentArticles === 'my' ? myArticles : favoritedArticles" v-bind:key="article.slug" v-bind:article="article"></ArticlePreview>
 
         </div>
 
@@ -86,8 +52,87 @@
 </template>
 
 <script>
+import ArticlePreview from './../shared/ArticlePreview.vue';
+import http from './../../shared/http';
+
 export default {
-  name: 'profile'
+  name: 'profile',
+  props: ['isUser', 'profileData'],
+  components: {
+    ArticlePreview
+  },
+  data() {
+    return {
+      myArticles: [],
+      favoritedArticles: [],
+      currentArticles: 'my',
+      unSubscribe: this.$store.subscribe((mutation, state) => {
+        if (
+          mutation.type === 'setArticles' ||
+          mutation.type === 'updateArticle' ||
+          mutation.type === 'changeProfile'
+        ) {
+          console.log('Profile change articles');
+
+          //subscribe come first, before props change value
+          setTimeout(() => {
+            this.getMyArticles();
+
+            this.getFavoritedArticles();
+          }, 500);
+        }
+      })
+    };
+  },
+  methods: {
+    getMyArticles() {
+      http
+        .get('/articles', {
+          headers: {
+            Authorization: 'Token ' + this.$store.state.user.token
+          },
+          params: {
+            author: this.profileData.username
+          }
+        })
+        .then(res => {
+          this.myArticles = res.data.articles;
+        });
+    },
+    getFavoritedArticles() {
+      http
+        .get('/articles', {
+          headers: {
+            Authorization: 'Token ' + this.$store.state.user.token
+          },
+          params: {
+            favorited: this.profileData.username
+          }
+        })
+        .then(res => {
+          this.favoritedArticles = res.data.articles;
+        });
+    }
+  },
+  mounted() {
+    console.log('profile mounted');
+    if (this.$store.state.articles.length === 0) {
+      this.$store.dispatch('getArticles');
+    } else {
+      this.getMyArticles();
+    }
+
+    if (this.favoritedArticles.length === 0) {
+      this.getFavoritedArticles();
+    }
+  },
+  update(){
+    console.log('profile updated');
+  },
+  beforeDestroy() {
+    console.log('profile before destroy');
+    this.unSubscribe();
+  }
 };
 </script>
 

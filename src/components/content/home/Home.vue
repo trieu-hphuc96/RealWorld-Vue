@@ -15,10 +15,13 @@
           <div class="feed-toggle">
             <ul class="nav nav-pills outline-active">
               <li class="nav-item">
-                <a class="nav-link" v-if="isLogin" href="">Your Feed</a>
+                <a class="nav-link" v-bind:class="{ active: currentTab === 'yourFeed' }" v-if="isLogin" v-on:click.prevent="getArticlesByFollowedPeople()" href="">Your Feed</a>
               </li>
               <li class="nav-item">
-                <a class="nav-link active" href="">Global Feed</a>
+                <a class="nav-link" v-bind:class="{ active: currentTab === 'globalFeed' }" v-on:click.prevent="getAllArticles()" href="">Global Feed</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link active" v-if="currentTag !== ''" href="">{{'#'+currentTag}}</a>
               </li>
             </ul>
           </div>
@@ -31,7 +34,7 @@
             <p>Popular Tags</p>
 
             <div class="tag-list">
-              <Tag v-for="(tag,i) in tags" v-bind:key="i" v-bind:tag="tag"></Tag>
+              <Tag v-for="(tag,i) in tags" v-bind:key="i" v-bind:tag="tag" v-on:getArticlesByTag="getArticlesByTag($event)"></Tag>
             </div>
           </div>
         </div>
@@ -42,7 +45,7 @@
 
 <script>
 import http from '../../../shared/http.js';
-import ArticlePreview from './article/ArticlePreview.vue';
+import ArticlePreview from './../../shared/ArticlePreview.vue';
 import Tag from './Tag.vue';
 import store from './../../../store.js';
 
@@ -54,11 +57,27 @@ export default {
   },
   data() {
     return {
-      articles: this.$store.state.articles,
+      articles: [],
       tags: [],
+      currentTag: '',
+      currentTab: 'globalFeed',
       subscribe: this.$store.subscribe((mutation, state) => {
-        if (mutation.type === 'setArticles') {
-          this.articles = this.$store.state.articles;
+        if (
+          mutation.type === 'setArticles' &&
+          this.currentTab === 'globalFeed'
+        ) {
+          this.articles = state.articles;
+        }
+
+        if (mutation.type === 'updateArticle') {
+          if (this.currentTab === 'yourFeed') {
+            this.getArticlesByFollowedPeople();
+          } else if (
+            this.currentTab !== 'yourFeed' &&
+            this.currentTab !== 'globalFeed'
+          ) {
+            this.getArticlesByTag(this.currentTab);
+          }
         }
       })
     };
@@ -68,12 +87,56 @@ export default {
       return Object.keys(store.state.user).length !== 0;
     }
   },
+  methods: {
+    getAllArticles() {
+      this.currentTab = 'globalFeed';
+      this.currentTag = '';
+      this.articles = this.$store.state.articles;
+    },
+    getArticlesByFollowedPeople() {
+      this.currentTab = 'yourFeed';
+      this.currentTag = '';
+
+      //get from global articles
+      // this.articles = this.articles.filter(item => {
+      //   return item.author.following;
+      // })
+
+      //get all from database
+
+      http
+        .get('/articles/feed', {
+          headers: { Authorization: 'Token ' + this.$store.state.user.token }
+        })
+        .then(res => {
+          this.articles = res.data.articles;
+        });
+    },
+    getArticlesByTag(tag) {
+      this.currentTag = tag;
+      this.currentTab = tag;
+      http
+        .get('/articles', {
+          headers: { Authorization: 'Token ' + this.$store.state.user.token },
+          params: { tag: tag }
+        })
+        .then(res => {
+          this.articles = res.data.articles;
+        });
+        
+    }
+  },
   mounted() {
     this.$store.dispatch('getArticles');
 
     http.get('/tags').then(res => {
       this.tags = res.data.tags;
     });
+
+    if (this.$store.state.isLogin) {
+      this.currentTab = 'yourFeed';
+      this.getArticlesByFollowedPeople();
+    }
   }
 };
 </script>

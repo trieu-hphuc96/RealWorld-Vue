@@ -1,5 +1,5 @@
 <template>
-  <a href="" class="tag-pill tag-default">{{tag}}</a>
+  <a href="" v-on:click.prevent="$emit('getArticlesByTag',tag)" class="tag-pill tag-default">{{tag}}</a>
 </template>
 
 <script>

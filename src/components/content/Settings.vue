@@ -5,11 +5,11 @@
 
         <div class="col-md-6 offset-md-3 col-xs-12">
           <h1 class="text-xs-center">Your Settings</h1>
-          
+
           <ul class="error-messages">
             <li v-for="(error,i) in errors" v-bind:key="i">{{error}}</li>
           </ul>
-          
+
           <form v-on:submit.prevent="submitEditProfile">
             <fieldset>
               <fieldset class="form-group">
@@ -32,6 +32,11 @@
               </button>
             </fieldset>
           </form>
+
+          <hr>
+          <button class="btn btn-outline-danger" v-on:click.prevent="logOut">
+            Or click here to logout.
+          </button>
         </div>
 
       </div>
@@ -40,6 +45,8 @@
 </template>
 
 <script>
+import Cookies from 'js-cookie';
+
 export default {
   name: 'settings',
   data() {
@@ -61,10 +68,16 @@ export default {
   },
   methods: {
     submitEditProfile() {
-      this.$store.dispatch('updateUser',this.user)
+      this.$store.dispatch('updateUser', this.user);
       console.log(this.$store.state.user);
       console.log(this.$store.state.errors);
       console.log(this.user);
+    },
+    logOut() {
+      Cookies.remove('user');
+      this.$store.state.user = {};
+      this.$store.state.isLogin = false;
+      this.$store.commit('route', '');
     }
   }
 };

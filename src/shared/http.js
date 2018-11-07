@@ -18,6 +18,10 @@ class Http {
   put(url = '', data = {}, config = {}) {
     return this.instance.put(url, data, config);
   }
+
+  delete(url = '', config = {}) {
+    return this.instance.delete(url, config);
+  }
 }
 
 const http = new Http;

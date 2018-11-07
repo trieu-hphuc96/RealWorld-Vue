@@ -4,7 +4,7 @@
       <div class="row">
 
         <div class="col-md-10 offset-md-1 col-xs-12">
-          <form v-on:submit.prevent="submitArticle">
+          <form v-on:submit.prevent="mode === 'add' ? addArticle() : updateArticle()">
             <fieldset>
               <fieldset class="form-group">
                 <input type="text" class="form-control form-control-lg" placeholder="Article Title" v-model="article.title">
@@ -39,21 +39,16 @@
 <script>
 export default {
   name: 'editor',
-  props: ['editArticle'],
-  data() {
-    return {
-      article: {
-        title: '',
-        description: '',
-        body: '',
-        tag: '',
-        tagList: []
-      }
-    };
-  },
+  props: ['article', 'mode'],
   methods: {
-    submitArticle() {
+    addArticle() {
       console.log(this.article);
+      const data = { article: this.article };
+      delete data.article.tag;
+
+      this.$store.dispatch('addArticle', data);
+    },
+    updateArticle() {
       const data = {
         article: {
           title: this.article.title,
@@ -63,7 +58,10 @@ export default {
         }
       };
 
-      this.$store.dispatch('addArticle', data);
+      this.$store.dispatch('updateArticle', {
+        article: data,
+        slug: this.article.slug
+      });
     },
     addTag() {
       if (this.article.tag !== '') {
