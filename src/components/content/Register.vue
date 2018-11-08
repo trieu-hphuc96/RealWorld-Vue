@@ -6,24 +6,24 @@
         <div class="col-md-6 offset-md-3 col-xs-12">
           <h1 class="text-xs-center">Sign up</h1>
           <p class="text-xs-center">
-            <a href="/login">Have an account?</a>
+            <a href="" v-on:click.prevent="$store.commit('route','/login')">Have an account?</a>
           </p>
 
           <ul class="error-messages">
-            <li>That email is already taken</li>
+            <li v-for="(error,i) in errors" v-bind:key="i">{{error}}</li>
           </ul>
 
-          <form>
+          <form v-on:submit.prevent="register">
             <fieldset class="form-group">
-              <input class="form-control form-control-lg" type="text" placeholder="Your Name">
+              <input class="form-control form-control-lg" type="text" placeholder="Your Name" v-model="user.username">
             </fieldset>
             <fieldset class="form-group">
-              <input class="form-control form-control-lg" type="text" placeholder="Email">
+              <input class="form-control form-control-lg" type="text" placeholder="Email" v-model="user.email">
             </fieldset>
             <fieldset class="form-group">
-              <input class="form-control form-control-lg" type="password" placeholder="Password">
+              <input class="form-control form-control-lg" type="password" placeholder="Password" v-model="user.password">
             </fieldset>
-            <button class="btn btn-lg btn-primary pull-xs-right">
+            <button class="btn btn-lg btn-primary pull-xs-right" type="submit">
               Sign up
             </button>
           </form>
@@ -35,7 +35,27 @@
 
 <script>
 export default {
-  name: 'register'
+  name: 'register',
+  data() {
+    return {
+      user: {
+        username: '',
+        email: '',
+        password: ''
+      },
+      errors: {},
+      subscribe: this.$store.subscribe((mutation, state) => {
+        if (mutation.type === 'errors') {
+          this.errors = state.errors['register'];
+        }
+      })
+    };
+  },
+  methods: {
+    register() {
+      this.$store.dispatch('register', { user: this.user });
+    }
+  }
 };
 </script>
 

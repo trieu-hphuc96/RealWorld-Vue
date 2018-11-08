@@ -18,6 +18,12 @@
       <p>{{article.body}}</p>
       <span>Read more...</span>
     </a>
+    <ul class="tag-list" v-bind:style="{float: 'right', margin: '10px 0 0'}">
+      <li class="tag-default tag-pill tag-outline ng-binding ng-scope" v-for="(tag,i) in article.tagList" v-bind:key="i">
+        {{tag}}
+      </li>
+    </ul>
+    <div v-bind:style="{clear: 'both'}"></div>
   </div>
 </template>
 
@@ -28,31 +34,50 @@ var moment = require('moment');
 export default {
   name: 'article-preview',
   props: ['article'],
+  computed: {
+    isLogin() {
+      return this.$store.state.isLogin;
+    }
+  },
   methods: {
     formatDate(dateString) {
       return moment(dateString).format('LL');
     },
     favoriteHandler() {
-      if (this.article.favorited) {
+      if (!this.isLogin) {
+        this.$store.commit('route', '/register');
+      } else if (this.article.favorited) {
         this.$store.dispatch('unFavoriteArticle', this.article.slug);
       } else {
         this.$store.dispatch('favoriteArticle', this.article.slug);
       }
     },
     changeProfile() {
-      http
-        .get('/profiles/' + this.article.author.username, {
-          headers: {
-            Authorization: 'Token ' + this.$store.state.user.token
-          }
-        })
-        .then(res => {
-          console.log(res);
-          this.$store.commit('changeProfile', res.data.profile)
-        })
-        .catch(error => {
-          console.log(error.response);
-        });
+      if (this.isLogin) {
+        http
+          .get('/profiles/' + this.article.author.username, {
+            headers: {
+              Authorization: 'Token ' + this.$store.state.user.token
+            }
+          })
+          .then(res => {
+            console.log(res);
+            this.$store.commit('changeProfile', res.data.profile);
+          })
+          .catch(error => {
+            console.log(error.response);
+          });
+      } else {
+        http
+          .get('/profiles/' + this.article.author.username)
+          .then(res => {
+            console.log(res);
+            this.$store.commit('changeProfile', res.data.profile);
+          })
+          .catch(error => {
+            console.log(error.response);
+          });
+      }
     }
   }
 };

@@ -11,10 +11,10 @@
             <p>
               {{profileData.bio}}
             </p>
-            <a class="btn btn-sm btn-outline-secondary action-btn" v-if="!isUser && !profileData.following" v-on:click.prevent="$store.dispatch('followPerson',profileData.username)" href="">
+            <a class="btn btn-sm btn-outline-secondary action-btn" v-if="!isUser && !profileData.following" v-on:click.prevent="followPerson" href="">
               <i class="ion-plus-round"></i> &nbsp; Follow {{profileData.username}}
             </a>
-            <a class="btn btn-sm btn-outline-secondary action-btn" v-if="!isUser && profileData.following" v-on:click.prevent="$store.dispatch('unFollowPerson',profileData.username)" href="">
+            <a class="btn btn-sm btn-outline-secondary action-btn" v-if="!isUser && profileData.following" v-on:click.prevent="unFollowPerson" href="">
               <i class="ion-minus-round"></i> &nbsp; Unfollow {{profileData.username}}
             </a>
             <a class="btn btn-sm btn-outline-secondary action-btn" v-if="isUser" href="" v-on:click.prevent="$store.commit('route','/settings')">
@@ -84,13 +84,31 @@ export default {
       })
     };
   },
+  computed: {
+    isLogin() {
+      return this.$store.state.isLogin;
+    },
+    config() {
+      return this.isLogin
+        ? {
+            headers: {
+              Authorization: 'Token ' + this.$store.state.user.token
+            }
+          }
+        : {};
+    }
+  },
   methods: {
     getMyArticles() {
+      console.log({
+        ...this.config,
+        params: {
+          author: this.profileData.username
+        }
+      });
       http
         .get('/articles', {
-          headers: {
-            Authorization: 'Token ' + this.$store.state.user.token
-          },
+          ...this.config,
           params: {
             author: this.profileData.username
           }
@@ -102,9 +120,7 @@ export default {
     getFavoritedArticles() {
       http
         .get('/articles', {
-          headers: {
-            Authorization: 'Token ' + this.$store.state.user.token
-          },
+          ...this.config,
           params: {
             favorited: this.profileData.username
           }
@@ -112,6 +128,18 @@ export default {
         .then(res => {
           this.favoritedArticles = res.data.articles;
         });
+    },
+    followPerson(){
+      if (!this.isLogin) {
+        this.$store.commit('route', '/register');
+      } else {
+      this.$store.dispatch('followPerson',article.author.username)}
+    },
+    unFollowPerson(){
+      if (!this.isLogin) {
+        this.$store.commit('route', '/register');
+      } else {
+      this.$store.dispatch('unFollowPerson',article.author.username)}
     }
   },
   mounted() {
@@ -126,7 +154,7 @@ export default {
       this.getFavoritedArticles();
     }
   },
-  update(){
+  update() {
     console.log('profile updated');
   },
   beforeDestroy() {

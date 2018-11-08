@@ -115,15 +115,24 @@ export default {
     getArticlesByTag(tag) {
       this.currentTag = tag;
       this.currentTab = tag;
-      http
-        .get('/articles', {
-          headers: { Authorization: 'Token ' + this.$store.state.user.token },
-          params: { tag: tag }
-        })
-        .then(res => {
-          this.articles = res.data.articles;
-        });
-        
+      if (this.$store.state.isLogin) {
+        http
+          .get('/articles', {
+            headers: { Authorization: 'Token ' + this.$store.state.user.token },
+            params: { tag: tag }
+          })
+          .then(res => {
+            this.articles = res.data.articles;
+          });
+      } else {
+        http
+          .get('/articles', {
+            params: { tag: tag }
+          })
+          .then(res => {
+            this.articles = res.data.articles;
+          });
+      }
     }
   },
   mounted() {

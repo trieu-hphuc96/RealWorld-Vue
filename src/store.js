@@ -43,7 +43,7 @@ const store = new Vuex.Store({
       console.log(profileData);
       console.log(state.currentRoute);
       state.profileData = profileData;
-      if (state.profileData.username === state.user.username) {
+      if (Object.keys(state.user).length > 0 && state.profileData.username === state.user.username) {
         state.profileData.isUser = true;
       } else {
         state.profileData.isUser = false;
@@ -66,6 +66,18 @@ const store = new Vuex.Store({
     }
   },
   actions: {
+    register({ commit }, registerInfo) {
+      http
+        .post('/users', registerInfo)
+        .then(res => {
+          console.log(res);
+          commit('setUser', { user: res.data.user, route: '' })
+        })
+        .catch(error => {
+          console.log(error.response);
+          commit('errors', { action: 'register', error: error.response.data.errors })
+        })
+    },
     login({ commit }, loginInfo) {
       const data = {
         user: {
@@ -112,9 +124,9 @@ const store = new Vuex.Store({
           console.log(error.response);
         })
     },
-    updateArticle({ dispatch, state }, {article, slug}) {
+    updateArticle({ dispatch, state }, { article, slug }) {
       http
-        .put('/articles/'+slug, article, {
+        .put('/articles/' + slug, article, {
           headers: { 'Authorization': 'Token ' + state.user.token }
         })
         .then(res => {

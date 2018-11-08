@@ -14,10 +14,10 @@
           </div>
 
           <!-- if it's not user's article -->
-          <a class="btn btn-sm btn-outline-secondary action-btn" v-if="!isUser && !article.author.following" v-on:click.prevent="$store.dispatch('followPerson',article.author.username)" href="">
+          <a class="btn btn-sm btn-outline-secondary action-btn" v-if="!isUser && !article.author.following" v-on:click.prevent="followPerson" href="">
             <i class="ion-plus-round"></i> &nbsp; Follow {{article.author.username}}
           </a>
-          <a class="btn btn-sm btn-outline-secondary action-btn" v-if="!isUser && article.author.following" v-on:click.prevent="$store.dispatch('unFollowPerson',article.author.username)" href="">
+          <a class="btn btn-sm btn-outline-secondary action-btn" v-if="!isUser && article.author.following" v-on:click.prevent="unFollowPerson" href="">
             <i class="ion-minus-round"></i> &nbsp; Unfollow {{article.author.username}}
           </a>
           &nbsp;&nbsp;
@@ -65,10 +65,10 @@
           </div>
 
           <!-- if it's not user's article -->
-          <a class="btn btn-sm btn-outline-secondary action-btn" v-if="!isUser && !article.author.following" v-on:click.prevent="$store.dispatch('followPerson',article.author.username)" href="">
+          <a class="btn btn-sm btn-outline-secondary action-btn" v-if="!isUser && !article.author.following" v-on:click.prevent="followPerson" href="">
             <i class="ion-plus-round"></i> &nbsp; Follow {{article.author.username}}
           </a>
-          <a class="btn btn-sm btn-outline-secondary action-btn" v-if="!isUser && article.author.following" v-on:click.prevent="$store.dispatch('unFollowPerson',article.author.username)" href="">
+          <a class="btn btn-sm btn-outline-secondary action-btn" v-if="!isUser && article.author.following" v-on:click.prevent="unFollowPerson" href="">
             <i class="ion-minus-round"></i> &nbsp; Unfollow {{article.author.username}}
           </a>
           &nbsp;
@@ -148,28 +148,51 @@ export default {
       })
     };
   },
+  computed: {
+    isLogin() {
+      return this.$store.state.isLogin;
+    }
+  },
   methods: {
     formatDate(dateString) {
       return moment(dateString).format('LL');
     },
     favoriteHandler() {
-      if (this.article.favorited) {
+      if (!this.isLogin) {
+        this.$store.commit('route', '/register');
+      } else if (this.article.favorited) {
         this.$store.dispatch('unFavoriteArticle', this.article.slug);
       } else {
         this.$store.dispatch('favoriteArticle', this.article.slug);
       }
     },
     addComment() {
-      http
-        .post('/articles/' + this.article.slug + '/comments', this.comment, {
-          headers: { Authorization: 'Token ' + this.$store.state.user.token }
-        })
-        .then(res => {
-          this.comments.splice(0, 0, res.data.comment);
-        })
-        .catch(error => {
-          console.log(error.response);
-        });
+      if (!this.isLogin) {
+        this.$store.commit('route', '/register');
+      } else {
+        http
+          .post('/articles/' + this.article.slug + '/comments', this.comment, {
+            headers: { Authorization: 'Token ' + this.$store.state.user.token }
+          })
+          .then(res => {
+            this.comments.splice(0, 0, res.data.comment);
+          })
+          .catch(error => {
+            console.log(error.response);
+          });
+      }
+    },
+    followPerson(){
+      if (!this.isLogin) {
+        this.$store.commit('route', '/register');
+      } else {
+      this.$store.dispatch('followPerson',article.author.username)}
+    },
+    unFollowPerson(){
+      if (!this.isLogin) {
+        this.$store.commit('route', '/register');
+      } else {
+      this.$store.dispatch('unFollowPerson',article.author.username)}
     }
   },
   computed: {
