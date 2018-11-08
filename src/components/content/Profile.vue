@@ -133,13 +133,13 @@ export default {
       if (!this.isLogin) {
         this.$store.commit('route', '/register');
       } else {
-      this.$store.dispatch('followPerson',article.author.username)}
+      this.$store.dispatch('followPerson',this.profileData.username)}
     },
     unFollowPerson(){
       if (!this.isLogin) {
         this.$store.commit('route', '/register');
       } else {
-      this.$store.dispatch('unFollowPerson',article.author.username)}
+      this.$store.dispatch('unFollowPerson',this.profileData.username)}
     }
   },
   mounted() {

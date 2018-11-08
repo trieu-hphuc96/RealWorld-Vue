@@ -148,17 +148,12 @@ export default {
       })
     };
   },
-  computed: {
-    isLogin() {
-      return this.$store.state.isLogin;
-    }
-  },
   methods: {
     formatDate(dateString) {
       return moment(dateString).format('LL');
     },
     favoriteHandler() {
-      if (!this.isLogin) {
+      if (!this.$store.state.isLogin) {
         this.$store.commit('route', '/register');
       } else if (this.article.favorited) {
         this.$store.dispatch('unFavoriteArticle', this.article.slug);
@@ -167,7 +162,7 @@ export default {
       }
     },
     addComment() {
-      if (!this.isLogin) {
+      if (!this.$store.state.isLogin) {
         this.$store.commit('route', '/register');
       } else {
         http
@@ -182,17 +177,19 @@ export default {
           });
       }
     },
-    followPerson(){
-      if (!this.isLogin) {
+    followPerson() {
+      if (!this.$store.state.isLogin) {
         this.$store.commit('route', '/register');
       } else {
-      this.$store.dispatch('followPerson',article.author.username)}
+        this.$store.dispatch('followPerson', this.article.author.username);
+      }
     },
-    unFollowPerson(){
-      if (!this.isLogin) {
+    unFollowPerson() {
+      if (!this.$store.state.isLogin) {
         this.$store.commit('route', '/register');
       } else {
-      this.$store.dispatch('unFollowPerson',article.author.username)}
+        this.$store.dispatch('unFollowPerson', this.article.author.username);
+      }
     }
   },
   computed: {
