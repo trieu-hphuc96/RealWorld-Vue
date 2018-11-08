@@ -10,11 +10,16 @@
       &nbsp;
       <a href="" class="comment-author">{{comment.author.username}}</a>
       <span class="date-posted">{{formatDate(comment.createdAt)}}</span>
+      <span class="mod-options" v-if="comment.author.username === $store.state.user.username">
+        <i class="ion-trash-a" v-on:click="$emit('deleteComment', comment.id)"></i>
+      </span>
     </div>
   </div>
 </template>
 
 <script>
+import http from './../../../share/http';
+
 var moment = require('moment');
 
 export default {
@@ -23,7 +28,7 @@ export default {
   methods: {
     formatDate(dateString) {
       return moment(dateString).format('LL');
-    },
+    }
   }
 };
 </script>

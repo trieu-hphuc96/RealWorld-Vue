@@ -111,7 +111,7 @@
               </button>
             </div>
           </form>
-          <Comment v-for="(comment,i) in comments" v-bind:key="i" v-bind:comment="comment"></Comment>
+          <Comment v-for="(comment,i) in comments" v-bind:key="i" v-bind:comment="comment" v-on:deleteComment="deleteComment($event)"></Comment>
         </div>
       </div>
     </div>
@@ -177,6 +177,29 @@ export default {
             console.log(error.response);
           });
       }
+    },
+    deleteComment(commentId) {
+      console.log(this.comment);
+      const slug = this.$store.state.currentRoute.slice(
+        10,
+        this.$store.state.currentRoute.length
+      );
+
+      http
+        .delete('/articles/' + slug + '/comments/' + commentId, {
+          headers: { Authorization: 'Token ' + this.$store.state.user.token }
+        })
+        .then(res => {
+          console.log(res);
+          this.comments.forEach((element, i) => {
+            if (element.id === commentId) {
+              this.comments.splice(i, 1);
+            }
+          });
+        })
+        .catch(error => {
+          console.log(error.response);
+        });
     },
     followPerson() {
       console.log(this.isLogin);
