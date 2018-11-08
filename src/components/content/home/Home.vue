@@ -44,10 +44,9 @@
 </template>
 
 <script>
-import http from '../../../shared/http.js';
-import ArticlePreview from './../../shared/ArticlePreview.vue';
+import http from '../../../share/http.js';
+import ArticlePreview from './../../share/ArticlePreview.vue';
 import Tag from './Tag.vue';
-import store from './../../../store.js';
 
 export default {
   name: 'home',
@@ -84,7 +83,7 @@ export default {
   },
   computed: {
     isLogin() {
-      return Object.keys(store.state.user).length !== 0;
+      return Object.keys(this.$store.state.user).length !== 0;
     }
   },
   methods: {

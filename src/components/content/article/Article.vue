@@ -120,7 +120,7 @@
 
 <script>
 import Comment from './Comment.vue';
-import http from './../../../shared/http';
+import http from './../../../share/http';
 var moment = require('moment');
 
 export default {

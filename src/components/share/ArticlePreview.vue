@@ -28,7 +28,7 @@
 </template>
 
 <script>
-import http from './../../shared/http.js';
+import http from './../../share/http.js';
 var moment = require('moment');
 
 export default {

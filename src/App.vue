@@ -21,7 +21,7 @@ import Article from './components/content/article/Article.vue';
 import Footer from './components/footer/Footer.vue';
 import axios from 'axios';
 
-import http from './shared/http';
+import http from './share/http';
 
 const routes = {
   '': 'Home',
@@ -58,7 +58,7 @@ export default {
         tag: '',
         tagList: []
       },
-      editorMode: '',
+      editorMode: ''
     };
   },
   computed: {
@@ -108,7 +108,7 @@ export default {
             tag: '',
             tagList: []
           };
-            this.editorMode = 'add';
+          this.editorMode = 'add';
         }
 
         return routes['#/editor'];
@@ -136,6 +136,7 @@ export default {
   },
   beforeMount() {
     console.log('beforeMount');
+    this.$store.commit('A');
     if (this.$store.state.articles.length === 0) {
       this.$store.dispatch('getArticles');
     }

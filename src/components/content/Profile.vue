@@ -52,8 +52,8 @@
 </template>
 
 <script>
-import ArticlePreview from './../shared/ArticlePreview.vue';
-import http from './../../shared/http';
+import ArticlePreview from './../share/ArticlePreview.vue';
+import http from './../../share/http';
 
 export default {
   name: 'profile',
