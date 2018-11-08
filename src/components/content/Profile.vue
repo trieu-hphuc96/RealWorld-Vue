@@ -6,7 +6,7 @@
         <div class="row">
 
           <div class="col-xs-12 col-md-10 offset-md-1">
-            <img v-bind:src="profileData.image" class="user-img" />
+            <img v-bind:src="profileData.image !== null && profileData.image !== '' ? profileData.image: 'https://static.productionready.io/images/smiley-cyrus.jpg'" class="user-img" />
             <h4>{{profileData.username}}</h4>
             <p>
               {{profileData.bio}}
@@ -129,17 +129,19 @@ export default {
           this.favoritedArticles = res.data.articles;
         });
     },
-    followPerson(){
+    followPerson() {
       if (!this.isLogin) {
         this.$store.commit('route', '/register');
       } else {
-      this.$store.dispatch('followPerson',this.profileData.username)}
+        this.$store.dispatch('followPerson', this.profileData.username);
+      }
     },
-    unFollowPerson(){
+    unFollowPerson() {
       if (!this.isLogin) {
         this.$store.commit('route', '/register');
       } else {
-      this.$store.dispatch('unFollowPerson',this.profileData.username)}
+        this.$store.dispatch('unFollowPerson', this.profileData.username);
+      }
     }
   },
   mounted() {

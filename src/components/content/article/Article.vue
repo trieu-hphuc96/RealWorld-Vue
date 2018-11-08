@@ -7,9 +7,9 @@
         <h1>{{article.title}}</h1>
 
         <div class="article-meta">
-          <a href=""><img v-bind:src="article.author.image" /></a>
+          <a href="" v-on:click.prevent="changeProfile"><img v-bind:src="article.author.image" /></a>
           <div class="info">
-            <a href="" class="author">{{article.author.username}}</a>
+            <a href="" class="author" v-on:click.prevent="changeProfile">{{article.author.username}}</a>
             <span class="date">{{formatDate(article.createdAt)}}</span>
           </div>
 
@@ -58,9 +58,9 @@
 
       <div class="article-actions">
         <div class="article-meta">
-          <a href=""><img v-bind:src="article.author.image" /></a>
+          <a href="" v-on:click.prevent="changeProfile"><img v-bind:src="article.author.image" /></a>
           <div class="info">
-            <a href="" class="author">{{article.author.username}}</a>
+            <a href="" class="author" v-on:click.prevent="changeProfile">{{article.author.username}}</a>
             <span class="date">{{formatDate(article.createdAt)}}</span>
           </div>
 
@@ -105,7 +105,7 @@
               <textarea class="form-control" placeholder="Write a comment..." rows="3" v-model="comment.body"></textarea>
             </div>
             <div class="card-footer">
-              <img v-bind:src="$store.state.user.image" class="comment-author-img" />
+              <img v-bind:src="userImage" class="comment-author-img" />
               <button class="btn btn-sm btn-primary" type="submit">
                 Post Comment
               </button>
@@ -145,7 +145,8 @@ export default {
           this.article.favorited = !this.article.favorited;
           this.article.favoritesCount = mutation.payload.data[1].value;
         }
-      })
+      }),
+      isLogin: this.$store.state.isLogin
     };
   },
   methods: {
@@ -153,7 +154,7 @@ export default {
       return moment(dateString).format('LL');
     },
     favoriteHandler() {
-      if (!this.$store.state.isLogin) {
+      if (!this.isLogin) {
         this.$store.commit('route', '/register');
       } else if (this.article.favorited) {
         this.$store.dispatch('unFavoriteArticle', this.article.slug);
@@ -162,7 +163,7 @@ export default {
       }
     },
     addComment() {
-      if (!this.$store.state.isLogin) {
+      if (!this.isLogin) {
         this.$store.commit('route', '/register');
       } else {
         http
@@ -178,29 +179,64 @@ export default {
       }
     },
     followPerson() {
-      if (!this.$store.state.isLogin) {
+      console.log(this.isLogin);
+      if (!this.isLogin) {
         this.$store.commit('route', '/register');
       } else {
         this.$store.dispatch('followPerson', this.article.author.username);
       }
     },
     unFollowPerson() {
-      if (!this.$store.state.isLogin) {
+      if (!this.isLogin) {
         this.$store.commit('route', '/register');
       } else {
         this.$store.dispatch('unFollowPerson', this.article.author.username);
+      }
+    },
+    changeProfile() {
+      if (this.isLogin) {
+        http
+          .get('/profiles/' + this.article.author.username, {
+            headers: {
+              Authorization: 'Token ' + this.$store.state.user.token
+            }
+          })
+          .then(res => {
+            console.log(res);
+            this.$store.commit('changeProfile', res.data.profile);
+          })
+          .catch(error => {
+            console.log(error.response);
+          });
+      } else {
+        http
+          .get('/profiles/' + this.article.author.username)
+          .then(res => {
+            console.log(res);
+            this.$store.commit('changeProfile', res.data.profile);
+          })
+          .catch(error => {
+            console.log(error.response);
+          });
       }
     }
   },
   computed: {
     isUser() {
       return (
-        this.$store.state.isLogin &&
+        this.isLogin &&
         this.article.author.username === this.$store.state.user.username
       );
     },
     isHaveData() {
       return Object.keys(this.article).length > 0;
+    },
+    userImage() {
+      return this.$store.state.user.image !== undefined &&
+        this.$store.state.user.image !== null &&
+        this.$store.state.user.image !== ''
+        ? this.$store.state.user.image
+        : 'https://static.productionready.io/images/smiley-cyrus.jpg';
     }
   }
 };
